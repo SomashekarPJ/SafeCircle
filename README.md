@@ -1,11 +1,32 @@
-<div align="center">
+# SafeCircle: AI Cognitive Bridge
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+SafeCircle is an intuitive, AI-driven assistant designed to restore independence and safety for individuals living with dementia. By leveraging facial recognition, safe-zone monitoring, and real-time caregiver intelligence, SafeCircle acts as a cognitive bridge between patients and their surroundings.
 
-  <h1>Built with AI Studio</h2>
+## Key Features
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+- **Neural Memory Retrieval**: AI-powered object finding and memory assistance.
+- **Facial Recognition**: Real-time identification of family members and friends to reduce confusion.
+- **Safe-Zone Monitoring**: High-precision geofencing with instant caregiver alerts.
+- **Intelligent Briefings**: Daily routines and medication reminders with visual verification.
+- **Caregiver Dashboard**: A comprehensive link for monitoring safety and wellness status remotely.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## Tech Stack
 
-</div>
+- **Frontend**: React 18, Tailwind CSS, Framer Motion.
+- **Backend**: Express.js, Vite (Full-stack configuration).
+- **AI**: Google Gemini API (Pro & Flash models) for vision analysis and emotional support.
+- **Database & Auth**: Firebase Firestore and Firebase Authentication.
+
+## Getting Started
+
+1. **Install Dependencies**: `npm install`
+2. **Setup Environment**: Copy `.env.example` to `.env` and provide your `GEMINI_API_KEY`.
+3. **Run Development Server**: `npm run dev`
+4. **Build for Production**: `npm run build`
+
+## Project Structure
+
+- `/src/components`: UI components (Dashboard, Camera, Voice Notes, etc.)
+- `/src/services`: Integration logic for Gemini AI and Firebase.
+- `/server.ts`: Express server handling API routes and Vite middleware.
+- `firestore.rules`: Hardened security rules for data protection.

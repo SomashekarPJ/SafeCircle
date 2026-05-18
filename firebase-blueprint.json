@@ -1,0 +1,185 @@
+{
+  "entities": {
+    "Person": {
+      "title": "Person",
+      "description": "A person known to the user (Heart Memory)",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "relationship": { "type": "string" },
+        "biography": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "images": { 
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "lastVisit": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "relationship"]
+    },
+    "Memory": {
+      "title": "Memory",
+      "description": "A specific shared memory with a person",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "isEmotional": { "type": "boolean" }
+      },
+      "required": ["title", "description", "date"]
+    },
+    "Routine": {
+      "title": "Routine",
+      "description": "A daily routine item",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "time": { "type": "string" },
+        "type": { "type": "string", "enum": ["medication", "exercise", "meal", "appointment", "other"] },
+        "isCompleted": { "type": "boolean" },
+        "notes": { "type": "string" },
+        "voiceNoteUrl": { "type": "string" },
+        "voiceNoteSenderName": { "type": "string" }
+      },
+      "required": ["title", "time", "type", "isCompleted"]
+    },
+    "BehaviorLog": {
+      "title": "Behavior Log",
+      "description": "Log of user behavior or mood",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "mood": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "routineId": { "type": "string" },
+        "hour": { "type": "number" }
+      },
+      "required": ["type", "timestamp"]
+    },
+    "HydrationLog": {
+      "title": "Hydration Log",
+      "description": "Log of water intake",
+      "type": "object",
+      "properties": {
+        "drankAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["drankAt"]
+    },
+    "MedicationLog": {
+      "title": "Medication Log",
+      "description": "Log of medication taken",
+      "type": "object",
+      "properties": {
+        "routineId": { "type": "string" },
+        "medicationName": { "type": "string" },
+        "takenAt": { "type": "string", "format": "date-time" },
+        "verified": { "type": "boolean" }
+      },
+      "required": ["routineId", "medicationName", "takenAt"]
+    },
+    "SceneSnapshot": {
+      "title": "Scene Snapshot",
+      "description": "Snapshot of a room/object for later search",
+      "type": "object",
+      "properties": {
+        "imageBase64": { "type": "string" },
+        "roomGuess": { "type": "string" },
+        "itemsDetected": { "type": "array", "items": { "type": "string" } },
+        "capturedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["imageBase64", "capturedAt"]
+    },
+    "WeeklyReport": {
+      "title": "Weekly Report",
+      "description": "AI generated health summary",
+      "type": "object",
+      "properties": {
+        "overallTrend": { "type": "string" },
+        "highlights": { "type": "array", "items": { "type": "string" } },
+        "concerns": { "type": "array", "items": { "type": "string" } },
+        "recommendations": { "type": "array", "items": { "type": "string" } },
+        "doctorNotes": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["overallTrend", "highlights", "concerns", "recommendations", "doctorNotes", "timestamp"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "caregiverPin": { "type": "string" },
+        "homeAddress": { "type": "string" },
+        "homeLatLng": { 
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "hydrationEnabled": { "type": "boolean" },
+        "hydrationIntervalMinutes": { "type": "number" },
+        "hydrationStartHour": { "type": "number" },
+        "hydrationEndHour": { "type": "number" },
+        "safeZoneRadiusMeters": { "type": "number" }
+      }
+    },
+    "GeofenceAlert": {
+      "title": "Geofence Alert",
+      "description": "Alert when user leaves safe zone",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "resolved": { "type": "boolean" }
+      },
+      "required": ["userId", "lat", "lng", "timestamp", "resolved"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Main user document"
+    },
+    "/users/{userId}/people": {
+      "schema": "Person",
+      "description": "Collection of people the user wants to recognize"
+    },
+    "/users/{userId}/memories": {
+      "schema": "Memory",
+      "description": "Journal of interactions"
+    },
+    "/users/{userId}/routines": {
+      "schema": "Routine",
+      "description": "Daily schedule for the user"
+    },
+    "/users/{userId}/behaviorLogs": {
+      "schema": "BehaviorLog",
+      "description": "User behavior tracking"
+    },
+    "/users/{userId}/hydrationLogs": {
+      "schema": "HydrationLog",
+      "description": "Water intake tracking"
+    },
+    "/users/{userId}/medicationLogs": {
+      "schema": "MedicationLog",
+      "description": "Medication adherence tracking"
+    },
+    "/users/{userId}/sceneSnapshots": {
+      "schema": "SceneSnapshot",
+      "description": "Visual memory for object finding"
+    },
+    "/users/{userId}/weeklyReports": {
+      "schema": "WeeklyReport",
+      "description": "Caregiver health summaries"
+    },
+    "/geofence_alerts/{alertId}": {
+      "schema": "GeofenceAlert",
+      "description": "Safety alerts"
+    }
+  }
+}

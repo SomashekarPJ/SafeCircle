@@ -1,0 +1,166 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Entity Validations ---
+    function isValidPerson(data) {
+      return data.keys().hasAll(['name', 'relationship'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.relationship is string && data.relationship.size() > 0 && data.relationship.size() <= 100
+        && (!('biography' in data) || (data.biography is string && data.biography.size() <= 1000))
+        && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 2000))
+        && (!('images' in data) || (data.images is list && data.images.size() <= 20))
+        && (!('lastVisit' in data) || data.lastVisit is string);
+    }
+
+    function isValidMemory(data) {
+      return data.keys().hasAll(['title', 'description', 'date'])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.description is string && data.description.size() > 0 && data.description.size() <= 2000
+        && data.date is string;
+    }
+
+    function isValidRoutine(data) {
+      return data.keys().hasAll(['title', 'time', 'type', 'isCompleted'])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.time is string
+        && data.type is string
+        && data.isCompleted is bool
+        && (!('voiceNoteUrl' in data) || data.voiceNoteUrl is string)
+        && (!('voiceNoteSenderName' in data) || data.voiceNoteSenderName is string);
+    }
+
+    function isValidBehaviorLog(data) {
+      return data.keys().hasAll(['type', 'timestamp'])
+        && data.type is string
+        && data.timestamp is timestamp;
+    }
+
+    function isValidHydrationLog(data) {
+      return data.keys().hasAll(['drankAt'])
+        && data.drankAt is timestamp;
+    }
+
+    function isValidMedicationLog(data) {
+      return data.keys().hasAll(['routineId', 'medicationName', 'takenAt'])
+        && data.routineId is string
+        && data.medicationName is string
+        && data.takenAt is timestamp;
+    }
+
+    function isValidSceneSnapshot(data) {
+      return data.keys().hasAll(['imageBase64', 'capturedAt'])
+        && data.imageBase64 is string && data.imageBase64.size() <= 1048576
+        && data.capturedAt is timestamp;
+    }
+
+    function isValidWeeklyReport(data) {
+      return data.keys().hasAll(['overallTrend', 'highlights', 'concerns', 'recommendations', 'doctorNotes', 'timestamp'])
+        && data.overallTrend is string
+        && data.highlights is list
+        && data.concerns is list
+        && data.recommendations is list
+        && data.doctorNotes is string
+        && data.timestamp is string;
+    }
+
+    function isValidGeofenceAlert(data) {
+      return data.keys().hasAll(['userId', 'lat', 'lng', 'timestamp', 'resolved'])
+        && data.userId is string
+        && data.lat is number
+        && data.lng is number
+        && data.timestamp is timestamp
+        && data.resolved is bool;
+    }
+
+    // --- Matches ---
+    match /geofence_alerts/{alertId} {
+      allow create: if isSignedIn() && isOwner(incoming().userId) && isValidGeofenceAlert(incoming());
+      allow list: if isSignedIn() && isOwner(resource.data.userId);
+      allow get: if isSignedIn() && isOwner(resource.data.userId);
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      match /people/{personId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidPerson(incoming());
+        allow update: if isOwner(userId) && isValidPerson(incoming())
+          && (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'relationship', 'biography', 'imageUrl', 'images', 'lastVisit']));
+        allow delete: if isOwner(userId);
+      }
+
+      match /memories/{memoryId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidMemory(incoming());
+        allow update: if isOwner(userId) && isValidMemory(incoming())
+          && (incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'date', 'tags', 'isEmotional']));
+        allow delete: if isOwner(userId);
+      }
+
+      match /routines/{routineId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidRoutine(incoming());
+        allow update: if isOwner(userId) && isValidRoutine(incoming())
+          && (incoming().diff(existing()).affectedKeys().hasOnly(['isCompleted', 'title', 'time', 'type', 'notes', 'voiceNoteUrl', 'voiceNoteSenderName']));
+        allow delete: if isOwner(userId);
+      }
+
+      match /behaviorLogs/{logId} {
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidBehaviorLog(incoming());
+      }
+
+      match /hydrationLogs/{logId} {
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidHydrationLog(incoming());
+      }
+
+      match /medicationLogs/{logId} {
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidMedicationLog(incoming());
+      }
+
+      match /sceneSnapshots/{snapshotId} {
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidSceneSnapshot(incoming());
+        allow delete: if isOwner(userId);
+      }
+
+      match /weeklyReports/{reportId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidWeeklyReport(incoming());
+      }
+    }
+  }
+}

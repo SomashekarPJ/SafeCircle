@@ -1,0 +1,6 @@
+{
+  "name": "SafeCircle",
+  "description": "An AI cognitive bridge restoring independence and safety for dementia patients with intelligent monitoring and memory retrieval.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
